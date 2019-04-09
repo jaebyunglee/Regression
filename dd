@@ -1,1 +1,168 @@
-dd
+rm(list=ls())
+###################################simple linear regression###############################
+#data
+x.vec = c(4,8,9,8,8,12,6,10,6,9)
+y.vec = c(9,20,22,15,17,30,18,25,10,20)
+
+#諛⑸쾿1
+b.function = function(x,y){
+  a = sum((x-mean(x))*(y-mean(y)))/sum((x-mean(x))^2)
+  c = mean(y)-sum((x-mean(x))*(y-mean(y)))/sum((x-mean(x))^2)*mean(x)
+  return(c("b0"=c,"b1"=a))
+}
+
+b.function(x.vec,y.vec)
+#諛⑸쾿2
+fit = lm(y.vec~x.vec)
+summary(fit)
+###############################multiple linear regression###############################
+
+#data
+x.mat = matrix(c(4,8,9,8,8,12,6,10,6,9,4,10,8,5,10,15,8,13,5,12),ncol = 2)
+x1.mat = cbind(1,x.mat)
+y.vec = c(9,20,22,15,17,30,18,25,10,20)
+
+#諛⑸쾿1
+beta = solve(t(x1.mat)%*%x1.mat)%*%t(x1.mat)%*%y.vec
+
+#諛⑸쾿2
+fit = lm(y.vec~x.mat)
+summary(fit)
+colnames(beta) = "value"
+rownames(beta) = c("b0","b1","b2")
+
+
+
+###########################polynomial regression#######################################
+#data
+x.vec = c(1,1,2,2,2,3,3,4,4,4,5,5,5,6,6,6,7,7,8,8,8,9,9,10)
+y.vec = c(5,6,6,7,8,7,8,7,8,9,8,9,10,8,9,10,8,9,7,8,9,7,8,7)
+
+#fit linear regression
+plot(x.vec,y.vec)
+fit.lm = lm(y.vec~x.vec)
+abline(fit.lm)
+
+#fit polynomial regression
+x.mat = cbind(1,x.vec)
+x.mat = cbind(x.mat,x.vec^2)
+beta = solve(t(x.mat)%*%x.mat)%*%t(x.mat)%*%y.vec
+hy.vec = x.mat%*%beta
+lines(x.vec,hy.vec)
+
+######################dummy regression###########################################
+install.packages("HSAUR")
+library("HSAUR")
+x=clouds[,c(1,3,7)]
+head(x)
+x$seeding_dummy=ifelse(x$seeding=="yes",1,0)
+fit = lm(rainfall~sne+seeding_dummy,data=x)
+summary(fit)
+
+#######################generalized linear regression################
+
+#data
+x.mat = matrix(c(4,8,9,8,8,12,6,10,6,9,4,10,8,5,10,15,8,13,5,12),ncol = 2)
+x1.mat = cbind(1,x.mat)
+y.vec = c(9,20,22,15,17,30,18,25,10,20)
+
+#gls estimator
+install.packages("nlme")
+library(nlme)
+fit = gls(y.vec~x.mat)
+summary(fit)
+
+################logistic regression#############################################
+mydata = read.csv("https://stats.idre.ucla.edu/stat/data/binary.csv")
+head(mydata)
+str(mydata)
+train = mydata[1:200,]
+test = mydata[201:400,]
+fit = glm(admit~gre+gpa+factor(rank),data=train,family="binomial")
+summary(fit)
+hy.vec = predict(fit,train[,-1],type = "response")
+hy.vec = ifelse(hy.vec>0.5,1,0)
+t = table(train$admit,hy.vec)
+1-sum(diag(t))/sum(t)
+
+#ROC & AUC
+install.packages("ROCR")
+library(ROCR)
+p = predict(fit,test,type="response")
+pr = prediction(p,test$admit)
+prf = performance(pr,measure = "tpr", x.measure="fpr")
+auc = performance(pr,measure = "auc")
+auc@y.values[[1]]
+############################lasso########################
+#data
+p = 5; q = 2; n = 200
+b.vec = c(1/(1:q),rep(0,p-q)) 
+x.mat = matrix(rnorm(n*p),nrow=n,ncol=p)
+y.vec = drop(x.mat%*%b.vec)+rnorm(n)
+
+#ridgewith linear regression
+cv.fit = cv.glmnet(x.mat,y.vec,family="gaussian",alpha=0) 
+pos.vec = cv.fit$lambda==cv.fit$lambda.min
+hb.vec = rbind(cv.fit$glmnet.fit$a0,cv.fit$glmnet.fit$beta)[,pos.vec]
+
+#lasso with linear regression
+cv.fit = cv.glmnet(x.mat,y.vec,family="gaussian") 
+pos.vec = cv.fit$lambda==cv.fit$lambda.min
+hb.vec = rbind(cv.fit$glmnet.fit$a0,cv.fit$glmnet.fit$beta)[,pos.vec]
+
+################################################################################################################
+################################################################################################################
+rm(list=ls())
+#data
+x1 = c(0,0,1,1,0,1,0,1,1,1,1,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1,0,1,0,0,0,1)
+x2 = c(6,6,4,6,8,6,8,4,4,6,6,8,8,8,8,8,8,4,4,4,4,8,8,8,8,4,4,4,8,6,8,4)
+x3 = c(1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1)
+x4 = c(4,4,4,3,3,3,3,4,4,4,4,3,3,3,3,3,3,4,4,4,3,3,3,3,3,4,5,5,5,5,5,4)
+x5 = c(160,160,108,258,360,225,360,146.7,140.8,167.6,167.6,275.8,275.8,275.8,472,460,
+       440,78.7,75.7,71.1,120.1,318,304,350,400,79,120.3,95.1,351,145,301,121)
+x6 = c(110,110,93,110,175,105,245,62,95,123,123,180,180,180,205,215,230,66,52,65,97,
+       150,150,245,175,66,91,113,264,175,335,109)
+x7 = c(4,4,1,1,2,1,4,2,2,4,4,3,3,3,4,4,4,1,2,1,1,2,2,4,2,1,2,2,4,6,8,2)
+x8 = c(3.9,3.9,3.85,3.08,3.15,2.76,3.21,3.69,3.92,3.92,3.92,3.07,3.07,3.07,2.93,3,
+       3.23,4.08,4.93,4.22,3.70,2.76,3.15,3.73,3.08,4.08,4.43,3.77,4.22,3.62,3.54,4.11)
+x9 = c(2620,2875,2320,3215,3440,3460,3570,3190,3150,3440,3440,4070,3730,3780,5250,5424,
+       5345,2200,1615,1835,2465,3520,3435,3840,3845,1935,2140,1513,3170,2770,3570,2780)
+x10 = c(16.46,17.02,18.61,19.44,17.02,20.22,15.84,20,22.9,18.3,18.9,17.4,17.6,18,17.98,
+        17.82,17.42,19.47,18.52,19.9,20.01,16.87,17.3,15.41,17.05,18.9,16.7,16.9,14.5,
+        15.5,14.6,18.6)
+y = c(21,21,22.8,21.4,18.7,18.1,14.3,24.4,22.8,19.2,17.8,16.4,17.3,15.2,10.4,10.4,
+      14.7,32.4,30.4,33.9,21.5,15.5,15.2,13.3,19.2,27.3,26,30.4,15.8,19.7,15,21.4)
+
+#data vector and matrix
+x.mat = matrix(c(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10),32,10)
+y.vec = y
+#scaled data
+scale.x.mat=scale(x.mat)
+scale.y.vec=scale(y.vec)
+corrplot::corrplot(cor(x.mat))
+
+#ridge regression
+fit = cv.glmnet(scale.x.mat,scale.y.vec,alpha=0,intercept=F,standardize=T)
+pos = fit$lambda==fit$lambda.min
+beta.ridge = fit$glmnet.fit$beta[,pos]
+sum((scale.y.vec-scale.x.mat%*%beta.ridge)^2)
+
+
+#scaled linear regression
+fit2=lm(scale.y.vec~scale.x.mat+0)
+summary(lm(scale.y.vec~scale.x.mat+0))
+beta.lm = fit2$coefficients
+sum((scale.y.vec-scale.x.mat%*%beta.lm)^2)
+
+#pca
+pca=prcomp(scale.x.mat)
+pca$rotation
+#pca regression
+e = eigen(cor(x.mat))
+e$vectors
+P = e$vectors[,1:8]
+z = scale.x.mat%*%P #z[,1] = scale.x.mat%*%pca$rotation[,1]
+alpha = lm(scale.y.vec~z+0)$coefficients #alpha = t(P)%*%beta.lm
+z%*%alpha # = scale.x.mat%*%beta_g
+beta_g = P%*%alpha
+scale.x.mat%*%beta_g
