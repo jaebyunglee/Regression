@@ -4,7 +4,7 @@ rm(list=ls())
 x.vec = c(4,8,9,8,8,12,6,10,6,9)
 y.vec = c(9,20,22,15,17,30,18,25,10,20)
 
-#諛⑸쾿1
+
 b.function = function(x,y){
   a = sum((x-mean(x))*(y-mean(y)))/sum((x-mean(x))^2)
   c = mean(y)-sum((x-mean(x))*(y-mean(y)))/sum((x-mean(x))^2)*mean(x)
@@ -12,7 +12,7 @@ b.function = function(x,y){
 }
 
 b.function(x.vec,y.vec)
-#諛⑸쾿2
+
 fit = lm(y.vec~x.vec)
 summary(fit)
 ###############################multiple linear regression###############################
